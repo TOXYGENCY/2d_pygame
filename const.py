@@ -1,4 +1,4 @@
-from enum import Enum
+# from enum import Enum
 
 # Константы игры
 
@@ -19,13 +19,24 @@ WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 
 
-# роли сущностей
-class Roles(Enum):
-    PLAYER = "player"
-    ENEMY = "enemy"
-    PROP = "prop"
-    NPC = "npc"
+# типы сущностей
+# class EntityTypes(Enum):
+#     PLAYER = "P"
+#     ENEMY = "X"
+#     COLLECTABLE = "C"
+#     PROP = "2"
+#     NPC = "N"
 
+
+# Типы клеток
+tile_types = {
+    "WALL": "1",
+    "ROAD": "0",
+    "EXIT": "E",
+    "START": "P",
+    "ENEMY": "X",
+    "COLLECTABLE": "C",
+}
 
 # пути
 PLAYER_SPRITE = r"assets\png\cars\player\blue_coupe_r.png"
