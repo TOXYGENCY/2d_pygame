@@ -1,5 +1,6 @@
-from classes.entities import Player
+from entities import Player
 import const as C
+import utils as u
 import pygame as pg
 
 # Инициализация Pygame
@@ -16,6 +17,7 @@ running = True
 
 # Заполнение экрана белым цветом
 screen.fill(C.WHITE)
+u.create_tiles_from_file("levels/level1.txt")
 
 while running:
     # ограничение фпс
@@ -28,13 +30,7 @@ while running:
             running = False
 
     # Рисование спрайтов
-    screen.blit(
-        PLAYER.sprite,
-        (
-            (C.WIDTH // 2) - (C.SPRITE_SIZE),
-            (C.HEIGHT // 2) - (C.SPRITE_SIZE),
-        ),
-    )
+    u.render_tiles(screen)
 
     # Обновление игры
     pg.display.update()
