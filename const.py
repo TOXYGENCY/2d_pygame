@@ -22,10 +22,10 @@ RED = (255, 0, 0)
 # типы сущностей
 entity_types = {
     "P": r"assets\png\cars\player\blue_coupe_r.png",
-    "X": "EntityTypes.ENEMY",
-    "C": "EntityTypes.COLLECTABLE",
-    "2": "EntityTypes.PROP",
-    "N": "EntityTypes.NPC",
+    "X": r"assets\png\cars\enemy\red_muscle_r.png",
+    "C": r"assets\png\collectables\cash_stack.png",
+    "2": r"assets\png\props\tree1.png",
+    "N": r"assets\png\cars\npc\taxi_r.png",
 }
 
 
@@ -39,14 +39,16 @@ entity_types = {
 #     "C": "COLLECTABLE",
 # }
 
-# test
+# Типы клеток. Содержат пути на спрайты
 tile_types = {
     "P": r"assets\png\roads\start_plain.png",
     "E": r"assets\png\roads\exit_plain.png",
     "1": r"assets\png\roads\wall_plain.png",
+    "2": r"assets\png\roads\prop_plain.png",
+    "N": r"assets\png\roads\npc_plain.png",
     "0": r"assets\png\roads\road_plain.png",
     "X": r"assets\png\roads\enemy_plain.png",
-    # "C": r"assets\png\roads\road_plain.png",
+    "C": r"assets\png\roads\collectable_plain.png",
 }
 
 # Спрайты взяты из https://minzinn.itch.io/pixelvehicles

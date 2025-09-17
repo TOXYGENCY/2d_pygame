@@ -2,6 +2,8 @@ from typing import List
 import const as C
 import pygame as pg
 
+all_entities = []
+
 
 # Общий класс для всех элементов со спрайтами
 class Sprited:
@@ -15,10 +17,11 @@ class Sprited:
 # Клетка
 class Tile(Sprited):
 
-    def __init__(self, type_code: str):
-
+    def __init__(self, type_code: str, x: int, y: int):
         self.assign_sprite(type_code)
         super().__init__(self.sprite_path)
+        self.x = x
+        self.y = y
         self.type_code = type_code
         self.entity = None
         self.assign_entity()
@@ -43,6 +46,9 @@ class Tile(Sprited):
             ent = Prop(self)
         elif type == "N":
             ent = NPC(self)
+
+        if ent:
+            all_entities.append(ent)
         self.entity = ent
 
     # проверка занятости
@@ -102,14 +108,14 @@ class Player(Entity):
     def __init__(self, tile: Tile):
         super().__init__(C.entity_types["P"], tile)
 
-    def move(self, direction):
-        self
 
-
+# Класс содержащий всю информацию об уровне
 class Level:
     def __init__(self, level_path: str):
         # Список со всеми рядами клеток
         self.tiles: List[List[Tile]] = [[]]
+        self.player = None
+        self.player_xy = (None, None)
         self.level_path = level_path
         self.tiles = self.create_tiles_from_file(level_path)
 
@@ -121,7 +127,7 @@ class Level:
             x = 0
             tile_row = []
             while x <= len(tiles[y]) - 1:
-                tile_row.append(Tile(tiles[y][x]))
+                tile_row.append(Tile(tiles[y][x], x, y))
                 x += 1
             level_tiles.append(tile_row)
             y += 1
@@ -153,3 +159,9 @@ class Level:
                     )
                 x += 1
             y += 1
+
+    def move_player(self, direction):
+        pass
+
+    def debug(self):
+        print(all_entities)

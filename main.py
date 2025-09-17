@@ -28,6 +28,7 @@ while running:
 
     # Рисование спрайтов
     level.render_tiles(screen)
+    # level.debug()
 
     # Обновление игры
     pg.display.update()
