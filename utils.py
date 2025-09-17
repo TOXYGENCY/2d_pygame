@@ -12,7 +12,7 @@ def create_tiles(tiles):
     while y <= len(tiles) - 1:
         x = 0
         tile_row = []
-        while x <= len(tiles[y]) - 2:  # скипаем последний \n
+        while x <= len(tiles[y]) - 1:
             tile_row.append(e.Tile(tiles[y][x]))
             x += 1
         TILES.append(tile_row)
@@ -22,9 +22,10 @@ def create_tiles(tiles):
 # Парсинг файла карты
 def create_tiles_from_file(path: str):
     file = open(path, "r")
-    lines = file.readlines()
+    lines = file.read()  # читаем все как есть
+    lines = lines.split("\n")  # делим и убираем переносы
     create_tiles(lines)
-    # print(TILES)
+    # print(len(TILES[-1]))
 
 
 # функция отрисовки клеток
