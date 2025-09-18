@@ -28,17 +28,6 @@ entity_types = {
     "N": r"assets\png\cars\npc\taxi_r.png",
 }
 
-
-# Типы клеток. Содержат пути на спрайты
-# tile_types = {
-#     "P": "START",
-#     "E": "EXIT",
-#     "1": "WALL",
-#     "0": r"assets\png\roads\road_plain.png",
-#     "X": "ENEMY",
-#     "C": "COLLECTABLE",
-# }
-
 # Типы клеток. Содержат пути на спрайты
 tile_types = {
     "P": r"assets\png\roads\start_plain.png",

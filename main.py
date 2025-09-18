@@ -18,7 +18,7 @@ level = Level("levels/level1.txt")
 
 while running:
     # ограничение фпс
-    clock.tick(60)
+    clock.tick(8)
 
     # Обработка событий
     for event in pg.event.get():
@@ -28,6 +28,21 @@ while running:
 
     # Рисование спрайтов
     level.render_tiles(screen)
+
+    key = pg.key.get_pressed()
+    if any(key):
+        direction = (0, 0)
+        if key[pg.K_w]:
+            direction = (0, 1)
+        elif key[pg.K_a]:
+            direction = (-1, 0)
+        elif key[pg.K_s]:
+            direction = (0, -1)
+        elif key[pg.K_d]:
+            direction = (1, 0)
+
+        level.move_player(direction)
+
     # level.debug()
 
     # Обновление игры
