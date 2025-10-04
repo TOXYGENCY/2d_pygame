@@ -1,8 +1,13 @@
+import random
 from typing import List
 import const as C
 import pygame as pg
 
 all_entities = []
+
+
+def get_from_sprite_set(sprite_set, key):
+    return pg.image.load(sprite_set[key]).convert_alpha()
 
 
 # Общий класс для всех элементов со спрайтами
@@ -22,6 +27,7 @@ class Tile(Sprited):
         super().__init__(self.sprite_path)
         self.x = x
         self.y = y
+        self.sprite_rotation = random.randint(1, 4)
         self.type_code = type_code
         self.entity = None
         self.assign_entity()
@@ -72,6 +78,14 @@ class Entity(Sprited):
         super().__init__(type)
         self.tile = tile
         self.type = type
+        self.sprite_set = None
+
+    # Изменение спрайта для сущности
+    def change_sprite(self, key: str):
+        if self.sprite_set:
+            self.sprite = get_from_sprite_set(self.sprite_set, key)
+        else:
+            print("Requested change for an entity with no sprite set")
 
 
 # Декор
@@ -94,6 +108,7 @@ class NPC(Entity):
 
     def __init__(self, tile: Tile):
         super().__init__(C.entity_types["N"], tile)
+        self.sprite_set = C.npc_sprites
 
 
 # враг (npc который преследует игрока)
@@ -101,6 +116,8 @@ class Enemy(Entity):
 
     def __init__(self, tile: Tile):
         super().__init__(C.entity_types["X"], tile)
+        self.sprite_set = C.enemy_sprites
+        self.next_tile = None
 
 
 # Сущность игрока
@@ -108,6 +125,7 @@ class Player(Entity):
 
     def __init__(self, tile: Tile):
         super().__init__(C.entity_types["P"], tile)
+        self.sprite_set = C.player_sprites
 
 
 # Класс содержащий всю информацию об уровне
@@ -120,6 +138,7 @@ class Level:
             filter(lambda x: isinstance(x, Player), all_entities)
         )[0]
         self.player_xy = (self.player.tile.x, self.player.tile.y)
+        self.should_move_entities = False
 
     # Создание карты по массиву с инструкциями
     def create_tiles(self, tiles) -> List[List[Tile]]:
@@ -149,10 +168,19 @@ class Level:
             x = 0
             while x <= len(self.tiles[y]) - 1:
                 # отрисовка клетки
-                screen.blit(
-                    self.tiles[y][x].sprite,
-                    (C.SPRITE_SIZE * x, C.SPRITE_SIZE * y),
-                )
+                if self.tiles[y][x].type_code == "1":
+                    screen.blit(
+                        pg.transform.rotate(
+                            self.tiles[y][x].sprite,
+                            self.tiles[y][x].sprite_rotation * 90,
+                        ),
+                        (C.SPRITE_SIZE * x, C.SPRITE_SIZE * y),
+                    )
+                else:
+                    screen.blit(
+                        self.tiles[y][x].sprite,
+                        (C.SPRITE_SIZE * x, C.SPRITE_SIZE * y),
+                    )
                 # отрисовка самой сущности, если она есть
                 if self.tiles[y][x].entity:
                     screen.blit(
@@ -162,6 +190,9 @@ class Level:
                 x += 1
             y += 1
 
+    # def move_npc(self, direction: tuple[int, int]):
+    #     pass
+
     # перемещение игрока. direction: (x, y) но с перевернутым y
     def move_player(self, direction: tuple[int, int]):
         # player_xy: (x, y)
@@ -169,6 +200,16 @@ class Level:
             self.player_xy[0] + direction[0],  # складываем x
             self.player_xy[1] + direction[1] * -1,  # складываем y
         )
+
+        # Изменение спрайта персонажа в зависимости от направления
+        if direction == (0, 1):
+            self.player.change_sprite("UP")
+        elif direction == (0, -1):
+            self.player.change_sprite("DOWN")
+        elif direction == (1, 0):
+            self.player.change_sprite("RIGHT")
+        elif direction == (-1, 0):
+            self.player.change_sprite("LEFT")
 
         this_tile = self.get_tile(self.player_xy[0], self.player_xy[1])
         next_tile = self.get_tile(new_player_xy[0], new_player_xy[1])
@@ -184,28 +225,39 @@ class Level:
                     self.game_over("You crashed.")
                 elif isinstance(next_tile.entity, Collectable):
                     self.collect_collectable("+1000 у.е.")
+            # Если стена
+            elif next_tile.type_code == "1":
+                self.game_over("You crashed into a wall.")
             # Если выход
             elif next_tile.type_code == "E":
                 self.level_passed()
 
-        this_tile.clear_entity()
-        next_tile.assign_entity(self.player)
-        self.player_xy = new_player_xy
+            this_tile.clear_entity()
+            next_tile.assign_entity(self.player)
+            self.player_xy = new_player_xy
+        else:
+            pass
 
     # поиск конкретной клетки по координатам
     def get_tile(self, x, y) -> Tile | None:
+        if x < 0 or y < 0:
+            print(f"Negative tile coordinates. ({x},{y})")
+            return None
+
         if y >= len(self.tiles):
             print(
                 f"""Index error upon searching for tile.
                 Y coordinate is out of bounds ({y} >= {len(self.tiles)})."""
             )
             return None
+
         elif x >= len(self.tiles[y]):
             print(
                 f"""Index error upon searching for tile.
                 X coordinate is out of bounds ({x} >= {len(self.tiles[y])})."""
             )
             return None
+
         else:
             return self.tiles[y][x]
 

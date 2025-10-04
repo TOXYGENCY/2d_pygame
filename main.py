@@ -18,7 +18,7 @@ level = Level("levels/level1.txt")
 
 while running:
     # ограничение фпс
-    clock.tick(8)
+    clock.tick(5)
 
     # Обработка событий
     for event in pg.event.get():
