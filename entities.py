@@ -1,6 +1,6 @@
 import random
 from typing import List
-import const as C
+import vars as v
 import pygame as pg
 
 all_entities = []
@@ -36,7 +36,7 @@ class Tile(Sprited):
 
     # Автоназначение спрайта по символьному коду её типа
     def assign_sprite(self, type_code):
-        self.sprite_path = C.tile_types[type_code]
+        self.sprite_path = v.tile_types[type_code]
 
     # очистка сущности
     def clear_entity(self):
@@ -92,14 +92,14 @@ class Entity(Sprited):
 class Prop(Entity):
 
     def __init__(self, tile: Tile):
-        super().__init__(C.entity_types["2"], tile)
+        super().__init__(v.entity_types["2"], tile)
 
 
 # коллектабл
 class Collectable(Entity):
 
     def __init__(self, tile: Tile):
-        super().__init__(C.entity_types["C"], tile)
+        super().__init__(v.entity_types["C"], tile)
         self.collected = False
 
 
@@ -107,16 +107,16 @@ class Collectable(Entity):
 class NPC(Entity):
 
     def __init__(self, tile: Tile):
-        super().__init__(C.entity_types["N"], tile)
-        self.sprite_set = C.npc_sprites
+        super().__init__(v.entity_types["N"], tile)
+        self.sprite_set = v.npc_sprites
 
 
 # враг (npc который преследует игрока)
 class Enemy(Entity):
 
     def __init__(self, tile: Tile):
-        super().__init__(C.entity_types["X"], tile)
-        self.sprite_set = C.enemy_sprites
+        super().__init__(v.entity_types["X"], tile)
+        self.sprite_set = v.enemy_sprites
         self.next_tile = None
 
 
@@ -124,8 +124,8 @@ class Enemy(Entity):
 class Player(Entity):
 
     def __init__(self, tile: Tile):
-        super().__init__(C.entity_types["P"], tile)
-        self.sprite_set = C.player_sprites
+        super().__init__(v.entity_types["P"], tile)
+        self.sprite_set = v.player_sprites
 
 
 # Класс содержащий всю информацию об уровне
@@ -139,6 +139,7 @@ class Level:
         )[0]
         self.player_xy = (self.player.tile.x, self.player.tile.y)
         self.should_move_entities = False
+        self.moves_score = 0
 
     # Создание карты по массиву с инструкциями
     def create_tiles(self, tiles) -> List[List[Tile]]:
@@ -174,18 +175,18 @@ class Level:
                             self.tiles[y][x].sprite,
                             self.tiles[y][x].sprite_rotation * 90,
                         ),
-                        (C.SPRITE_SIZE * x, C.SPRITE_SIZE * y),
+                        (v.SPRITE_SIZE * x, v.SPRITE_SIZE * y),
                     )
                 else:
                     screen.blit(
                         self.tiles[y][x].sprite,
-                        (C.SPRITE_SIZE * x, C.SPRITE_SIZE * y),
+                        (v.SPRITE_SIZE * x, v.SPRITE_SIZE * y),
                     )
                 # отрисовка самой сущности, если она есть
                 if self.tiles[y][x].entity:
                     screen.blit(
                         self.tiles[y][x].entity.sprite,
-                        ((C.SPRITE_SIZE * x), (C.SPRITE_SIZE * y)),
+                        ((v.SPRITE_SIZE * x), (v.SPRITE_SIZE * y)),
                     )
                 x += 1
             y += 1
@@ -235,6 +236,7 @@ class Level:
             this_tile.clear_entity()
             next_tile.assign_entity(self.player)
             self.player_xy = new_player_xy
+            self.moves_score += 1
         else:
             pass
 
@@ -261,11 +263,14 @@ class Level:
         else:
             return self.tiles[y][x]
 
-    def collect_collectable(self, mes="You picked up a collectable"):
+    def collect_collectable(self, mes=v.COLLECTABLE_MES):
         print(mes)
 
     def level_passed(self):
-        print("Congratulations, You Win!")
+        v.tick_rate = 1
+        v.show_win_mes = True
+        v.show_lost_mes = False
+        print(v.WIN_MES)
 
     def game_over(self, message):
         print(f"GAME OVER. {message}")
