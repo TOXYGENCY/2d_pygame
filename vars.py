@@ -7,6 +7,7 @@ selected_level = "levels/level1.txt"
 WINDOW_TITLE = "2D Pygame"
 CONTROLS_HINT = "Controls: [W], [A], [S], [D], [R]estart, [Esc] close"
 WIN_MES = "Congratulations, You Win!"
+lost_mes = "GAME OVER."
 COLLECTABLE_MES = "You picked up a collectable"
 
 DEFAULT_TICK_RATE = 6
@@ -32,7 +33,10 @@ TEXT_BACKGROUND = DGRAY
 MAIN_FONT = "Consolas"
 FONT_LARGE = 30
 FONT_SMALL = 16
-
+WIN_FONT = MAIN_FONT
+WIN_FONT_SIZE = 40
+LOST_FONT = MAIN_FONT
+LOST_FONT_SIZE = 30
 
 # типы сущностей
 entity_types = {

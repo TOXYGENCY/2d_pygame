@@ -263,17 +263,25 @@ class Level:
         else:
             return self.tiles[y][x]
 
+    # Сбор коллекционного предмета
     def collect_collectable(self, mes=v.COLLECTABLE_MES):
         print(mes)
 
+    # Уровень пройден
     def level_passed(self):
-        v.tick_rate = 1
         v.show_win_mes = True
         v.show_lost_mes = False
+        v.tick_rate = 1
         print(v.WIN_MES)
 
+    # Уровень проигран
     def game_over(self, message):
-        print(f"GAME OVER. {message}")
+        v.show_win_mes = False
+        v.show_lost_mes = True
+        v.tick_rate = 1
+        v.lost_mes = f"GAME OVER. {message}"
+        print(v.lost_mes)
 
+    # Дебаг, не обращать внимания
     def debug(self):
         print(all_entities)
