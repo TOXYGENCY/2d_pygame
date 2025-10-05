@@ -25,19 +25,32 @@ entity_types = {
     "X": r"assets\png\cars\enemy\red_muscle_r.png",
     "C": r"assets\png\collectables\cash_stack.png",
     "2": r"assets\png\props\tree1.png",
-    "N": r"assets\png\cars\npc\taxi_r.png",
+    "N": r"assets\png\cars\npc\npc_r.png",
 }
 
+# спрайты игрока
+player_sprites = {
+    "UP": r"assets\png\cars\player\blue_coupe_u.png",
+    "DOWN": r"assets\png\cars\player\blue_coupe_d.png",
+    "LEFT": r"assets\png\cars\player\blue_coupe_l.png",
+    "RIGHT": r"assets\png\cars\player\blue_coupe_r.png",
+}
 
-# Типы клеток. Содержат пути на спрайты
-# tile_types = {
-#     "P": "START",
-#     "E": "EXIT",
-#     "1": "WALL",
-#     "0": r"assets\png\roads\road_plain.png",
-#     "X": "ENEMY",
-#     "C": "COLLECTABLE",
-# }
+# спрайты npc
+npc_sprites = {
+    "UP": r"assets\png\cars\npc\npc_u.png",
+    "DOWN": r"assets\png\cars\npc\npc_d.png",
+    "LEFT": r"assets\png\cars\npc\npc_l.png",
+    "RIGHT": r"assets\png\cars\npc\npc_r.png",
+}
+
+# спрайты врага
+enemy_sprites = {
+    "UP": r"assets\png\cars\enemy\red_muscle_u.png",
+    "DOWN": r"assets\png\cars\enemy\red_muscle_d.png",
+    "LEFT": r"assets\png\cars\enemy\red_muscle_l.png",
+    "RIGHT": r"assets\png\cars\enemy\red_muscle_r.png",
+}
 
 # Типы клеток. Содержат пути на спрайты
 tile_types = {
