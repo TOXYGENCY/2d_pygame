@@ -1,4 +1,4 @@
-from entities import Level
+from entities import Level, all_entities
 import vars as v
 import pygame as pg
 
@@ -27,6 +27,7 @@ def restart_level():
     v.show_lost_mes = False
     v.tick_rate = v.DEFAULT_TICK_RATE
     v.lost_mes = "GAME OVER."
+    all_entities.clear()
     level = Level(v.selected_level)
     level.moves_score = 0
     print("Level restarted!")
@@ -79,38 +80,56 @@ while running:
     # ограничение фпс
     clock.tick(v.tick_rate)
 
+    # Здесь управляем таймером для перемещения остальных сущностей
+    if v.entity_move_timer >= v.ENTITY_MOVE_RATE:
+        v.entity_move_timer = 0
+    else:
+        v.entity_move_timer += 1
+
     # Обработка событий
-    for event in pg.event.get():
+    events = pg.event.get()
+    i = 0
+    while i < len(events):
+        event = events[i]
         # Выход из игры
         if event.type == pg.QUIT:
             running = False
+        i += 1
 
     # Рисование спрайтов
     level.render_tiles(screen)
 
+    if (
+        v.entity_move_timer == v.ENTITY_MOVE_RATE
+        and not v.show_lost_mes
+        and not v.show_win_mes
+    ):
+        level.move_entities_on_timer()
+
     # Рисование текста
     render_text()
 
+    # Обработка нажатий
     key = pg.key.get_pressed()
     if any(key):
         direction = (0, 0)
         if not v.show_lost_mes and not v.show_win_mes:
             if key[pg.K_w]:
-                direction = (0, 1)
+                direction = (0, -1)
             elif key[pg.K_a]:
                 direction = (-1, 0)
             elif key[pg.K_s]:
-                direction = (0, -1)
+                direction = (0, 1)
             elif key[pg.K_d]:
                 direction = (1, 0)
+        level.move_player(direction)
+
         if key[pg.K_r]:
             level = restart_level()
         elif key[pg.K_ESCAPE]:
             running = False
 
-        level.move_player(direction)
-
-    # level.debug()
+    level.debug()
 
     # Обновление игры
     pg.display.update()

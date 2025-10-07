@@ -7,10 +7,13 @@ selected_level = "levels/level1.txt"
 WINDOW_TITLE = "2D Pygame"
 CONTROLS_HINT = "Controls: [W], [A], [S], [D], [R]estart, [Esc] close"
 WIN_MES = "Congratulations, You Win!"
-lost_mes = "GAME OVER."
 COLLECTABLE_MES = "You picked up a collectable"
+lost_mes = "GAME OVER."
 
-DEFAULT_TICK_RATE = 6
+DEFAULT_TICK_RATE = 5
+# ENTITY_MOVE_RATE = DEFAULT_TICK_RATE * 0.5
+ENTITY_MOVE_RATE = 1
+entity_move_timer = 0
 tick_rate = DEFAULT_TICK_RATE
 
 show_lost_mes = False
@@ -37,6 +40,14 @@ WIN_FONT = MAIN_FONT
 WIN_FONT_SIZE = 40
 LOST_FONT = MAIN_FONT
 LOST_FONT_SIZE = 30
+
+DIRECTIONS = {
+    "RIGHT": (1, 0),
+    "LEFT": (-1, 0),
+    "DOWN": (0, 1),
+    "UP": (0, -1),
+    "NONE": (0, 0),
+}
 
 # типы сущностей
 entity_types = {

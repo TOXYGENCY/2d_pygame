@@ -1,5 +1,6 @@
 import random
 from typing import List
+
 import vars as v
 import pygame as pg
 
@@ -41,6 +42,7 @@ class Tile(Sprited):
     # очистка сущности
     def clear_entity(self):
         self.entity = None
+        self.refresh_occupation()
 
     # Автоназначение сущности
     def assign_entity(self, entity=None):
@@ -49,23 +51,26 @@ class Tile(Sprited):
         if not entity:
             if type == "P":
                 entity = Player(self)
+                all_entities.append(entity)
             elif type == "X":
                 entity = Enemy(self)
+                all_entities.append(entity)
             elif type == "C":
                 entity = Collectable(self)
+                all_entities.append(entity)
             elif type == "2":
                 entity = Prop(self)
+                all_entities.append(entity)
             elif type == "N":
                 entity = NPC(self)
-
-        if entity:
-            all_entities.append(entity)
+                all_entities.append(entity)
 
         self.entity = entity
+        self.refresh_occupation()
 
     # проверка занятости
     def refresh_occupation(self):
-        if self.entity:
+        if self.entity or self.type_code in "12":
             self.occupied = True
         else:
             self.occupied = False
@@ -74,11 +79,13 @@ class Tile(Sprited):
 # Сущность
 class Entity(Sprited):
 
-    def __init__(self, type: str, tile: Tile):
-        super().__init__(type)
+    def __init__(self, type_code: str, tile: Tile):
+        self.type_code = type_code
+        sprite_path = v.entity_types[type_code]
+        super().__init__(sprite_path)
         self.tile = tile
-        self.type = type
         self.sprite_set = None
+        self.next_tile = None
 
     # Изменение спрайта для сущности
     def change_sprite(self, key: str):
@@ -87,19 +94,36 @@ class Entity(Sprited):
         else:
             print("Requested change for an entity with no sprite set")
 
+    # Назначение следующей клетки
+    def set_new_tile(self, next_tile):
+        self.next_tile = next_tile
+        self.set_next_direction_sprite()
+
+    # Изменение спрайта сущности в зависимости от СЛЕДУЮЩЕГО направления
+    def set_next_direction_sprite(self, next_direction):
+        # next_direction = (next_direction[0], next_direction[1])
+        if next_direction == (0, -1):
+            self.change_sprite("UP")
+        elif next_direction == (0, 1):
+            self.change_sprite("DOWN")
+        elif next_direction == (1, 0):
+            self.change_sprite("RIGHT")
+        elif next_direction == (-1, 0):
+            self.change_sprite("LEFT")
+
 
 # Декор
 class Prop(Entity):
 
     def __init__(self, tile: Tile):
-        super().__init__(v.entity_types["2"], tile)
+        super().__init__("2", tile)
 
 
 # коллектабл
 class Collectable(Entity):
 
     def __init__(self, tile: Tile):
-        super().__init__(v.entity_types["C"], tile)
+        super().__init__("C", tile)
         self.collected = False
 
 
@@ -107,7 +131,7 @@ class Collectable(Entity):
 class NPC(Entity):
 
     def __init__(self, tile: Tile):
-        super().__init__(v.entity_types["N"], tile)
+        super().__init__("N", tile)
         self.sprite_set = v.npc_sprites
 
 
@@ -115,7 +139,7 @@ class NPC(Entity):
 class Enemy(Entity):
 
     def __init__(self, tile: Tile):
-        super().__init__(v.entity_types["X"], tile)
+        super().__init__("X", tile)
         self.sprite_set = v.enemy_sprites
         self.next_tile = None
 
@@ -124,7 +148,7 @@ class Enemy(Entity):
 class Player(Entity):
 
     def __init__(self, tile: Tile):
-        super().__init__(v.entity_types["P"], tile)
+        super().__init__("P", tile)
         self.sprite_set = v.player_sprites
 
 
@@ -140,6 +164,17 @@ class Level:
         self.player_xy = (self.player.tile.x, self.player.tile.y)
         self.should_move_entities = False
         self.moves_score = 0
+
+    def move_entities_on_timer(self):
+        i = 0
+        while i < len(
+            all_entities
+        ):  # почему то набивается массив все больше и больше
+            if all_entities[i].type_code in "XN":
+                print(f"moving {all_entities[i]}")
+                self.move_entity(all_entities[i])
+            i += 1
+        pass
 
     # Создание карты по массиву с инструкциями
     def create_tiles(self, tiles) -> List[List[Tile]]:
@@ -191,15 +226,78 @@ class Level:
                 x += 1
             y += 1
 
-    # def move_npc(self, direction: tuple[int, int]):
-    #     pass
+    # Рассчитать клетки для перемещения сущности
+    def calc_next_tiles(
+        self,
+        entity: Entity,
+        this_tile: Tile,
+    ):
+        directions = list(v.DIRECTIONS.values())
+
+        next_tile = None
+        i = 0
+        while i < len(directions) and (
+            next_tile is None or next_tile.occupied
+        ):
+            # print(f"Considering next_direction = {directions[i]}")
+            next_direction = directions[i]
+            next_tile = self.get_tile(
+                this_tile.x + next_direction[0],
+                this_tile.y + next_direction[1],
+            )
+            i += 1
+
+        next_tile2 = None
+        i = 0
+        while i < len(directions) and (
+            next_tile2 is None or next_tile2.occupied
+        ):
+            # print(
+            #     f"Considering next_direction2 = {directions[i]}. {next_tile}, {next_tile2}"
+            # )
+            next_direction2 = directions[i]
+            next_tile2 = self.get_tile(
+                next_tile.x + next_direction2[0],
+                next_tile.y + next_direction2[1],
+            )
+            i += 1
+
+        # entity.set_new_tile(next_tile)
+        entity.set_next_direction_sprite(next_direction2)
+        if entity.type_code == "N":
+            print(next_direction, next_direction2)
+        return next_tile, next_tile2
+
+    # Переместить сущность. direction: (x, y)
+    def move_entity(
+        self,
+        entity: Entity,
+    ):
+        # entity.direction, entity.next_direction = entity.calc_directions()
+        this_tile = self.get_tile(entity.tile.x, entity.tile.y)
+        next_tile, next_tile2 = self.calc_next_tiles(entity, this_tile)
+
+        this_tile.clear_entity()
+        next_tile.assign_entity(entity)
+        entity.tile = next_tile
+
+        # print(f"next_direction: {entity.next_tile2}")
+        # print(f"this_tile: ({this_tile.x}, {this_tile.y})")
+        # print(f"next_tile: ({next_tile.x}, {next_tile.y})")
+        # print(f"next_tile2: ({next_tile2.x}, {next_tile2.y})")
+        # print("---" * 50)
+
+    # Перемещение NPC
+    def move_npc(self):
+        self.move_entity()
+        pass
 
     # перемещение игрока. direction: (x, y) но с перевернутым y
     def move_player(self, direction: tuple[int, int]):
         # player_xy: (x, y)
         new_player_xy = (
             self.player_xy[0] + direction[0],  # складываем x
-            self.player_xy[1] + direction[1] * -1,  # складываем y
+            self.player_xy[1] + direction[1],  # складываем y
         )
 
         # Изменение спрайта персонажа в зависимости от направления
@@ -243,7 +341,7 @@ class Level:
     # поиск конкретной клетки по координатам
     def get_tile(self, x, y) -> Tile | None:
         if x < 0 or y < 0:
-            print(f"Negative tile coordinates. ({x},{y})")
+            print(f"No tile with negative coordinates. ({x},{y})")
             return None
 
         if y >= len(self.tiles):
@@ -284,4 +382,4 @@ class Level:
 
     # Дебаг, не обращать внимания
     def debug(self):
-        print(all_entities)
+        pass
