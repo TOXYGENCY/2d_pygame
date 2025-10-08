@@ -101,7 +101,6 @@ class Entity(Sprited):
 
     # Изменение спрайта сущности в зависимости от СЛЕДУЮЩЕГО направления
     def set_next_direction_sprite(self, next_direction):
-        # next_direction = (next_direction[0], next_direction[1])
         if next_direction == (0, -1):
             self.change_sprite("UP")
         elif next_direction == (0, 1):
@@ -171,7 +170,7 @@ class Level:
             all_entities
         ):  # почему то набивается массив все больше и больше
             if all_entities[i].type_code in "XN":
-                print(f"moving {all_entities[i]}")
+                # print(f"moving {all_entities[i]}")
                 self.move_entity(all_entities[i])
             i += 1
         pass
@@ -233,7 +232,7 @@ class Level:
         this_tile: Tile,
     ):
         directions = list(v.DIRECTIONS.values())
-
+        random.shuffle(directions)
         next_tile = None
         i = 0
         while i < len(directions) and (
@@ -247,14 +246,12 @@ class Level:
             )
             i += 1
 
+        random.shuffle(directions)
         next_tile2 = None
         i = 0
         while i < len(directions) and (
             next_tile2 is None or next_tile2.occupied
         ):
-            # print(
-            #     f"Considering next_direction2 = {directions[i]}. {next_tile}, {next_tile2}"
-            # )
             next_direction2 = directions[i]
             next_tile2 = self.get_tile(
                 next_tile.x + next_direction2[0],
@@ -262,10 +259,9 @@ class Level:
             )
             i += 1
 
-        # entity.set_new_tile(next_tile)
         entity.set_next_direction_sprite(next_direction2)
-        if entity.type_code == "N":
-            print(next_direction, next_direction2)
+        # if entity.type_code == "N":
+        # print(next_direction, next_direction2)
         return next_tile, next_tile2
 
     # Переместить сущность. direction: (x, y)
@@ -273,19 +269,12 @@ class Level:
         self,
         entity: Entity,
     ):
-        # entity.direction, entity.next_direction = entity.calc_directions()
         this_tile = self.get_tile(entity.tile.x, entity.tile.y)
         next_tile, next_tile2 = self.calc_next_tiles(entity, this_tile)
 
         this_tile.clear_entity()
         next_tile.assign_entity(entity)
         entity.tile = next_tile
-
-        # print(f"next_direction: {entity.next_tile2}")
-        # print(f"this_tile: ({this_tile.x}, {this_tile.y})")
-        # print(f"next_tile: ({next_tile.x}, {next_tile.y})")
-        # print(f"next_tile2: ({next_tile2.x}, {next_tile2.y})")
-        # print("---" * 50)
 
     # Перемещение NPC
     def move_npc(self):
@@ -302,9 +291,9 @@ class Level:
 
         # Изменение спрайта персонажа в зависимости от направления
         if direction == (0, 1):
-            self.player.change_sprite("UP")
-        elif direction == (0, -1):
             self.player.change_sprite("DOWN")
+        elif direction == (0, -1):
+            self.player.change_sprite("UP")
         elif direction == (1, 0):
             self.player.change_sprite("RIGHT")
         elif direction == (-1, 0):
@@ -324,9 +313,9 @@ class Level:
                     self.game_over("You crashed.")
                 elif isinstance(next_tile.entity, Collectable):
                     self.collect_collectable("+1000 у.е.")
-            # Если стена
-            elif next_tile.type_code == "1":
-                self.game_over("You crashed into a wall.")
+                # Если стена
+                elif next_tile.type_code == "1":
+                    self.game_over("You crashed into a wall.")
             # Если выход
             elif next_tile.type_code == "E":
                 self.level_passed()
@@ -369,14 +358,14 @@ class Level:
     def level_passed(self):
         v.show_win_mes = True
         v.show_lost_mes = False
-        v.tick_rate = 1
+        # v.tick_rate = 3
         print(v.WIN_MES)
 
     # Уровень проигран
     def game_over(self, message):
         v.show_win_mes = False
         v.show_lost_mes = True
-        v.tick_rate = 1
+        # v.tick_rate = 3
         v.lost_mes = f"GAME OVER. {message}"
         print(v.lost_mes)
 

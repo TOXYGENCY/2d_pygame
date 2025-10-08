@@ -10,7 +10,7 @@ WIN_MES = "Congratulations, You Win!"
 COLLECTABLE_MES = "You picked up a collectable"
 lost_mes = "GAME OVER."
 
-DEFAULT_TICK_RATE = 5
+DEFAULT_TICK_RATE = 75
 # ENTITY_MOVE_RATE = DEFAULT_TICK_RATE * 0.5
 ENTITY_MOVE_RATE = 1
 entity_move_timer = 0

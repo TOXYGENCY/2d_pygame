@@ -1,6 +1,7 @@
 from entities import Level, all_entities
 import vars as v
 import pygame as pg
+from tkinter import messagebox
 
 # Инициализация Pygame
 pg.init()
@@ -96,43 +97,58 @@ while running:
             running = False
         i += 1
 
-    # Рисование спрайтов
-    level.render_tiles(screen)
+    try:
+        # Рисование спрайтов
+        level.render_tiles(screen)
 
-    if (
-        v.entity_move_timer == v.ENTITY_MOVE_RATE
-        and not v.show_lost_mes
-        and not v.show_win_mes
-    ):
-        level.move_entities_on_timer()
+        if (
+            v.entity_move_timer == v.ENTITY_MOVE_RATE
+            and not v.show_lost_mes
+            and not v.show_win_mes
+        ):
+            level.move_entities_on_timer()
 
-    # Рисование текста
-    render_text()
+        # Рисование текста
+        render_text()
 
-    # Обработка нажатий
-    key = pg.key.get_pressed()
-    if any(key):
-        direction = (0, 0)
-        if not v.show_lost_mes and not v.show_win_mes:
-            if key[pg.K_w]:
-                direction = (0, -1)
-            elif key[pg.K_a]:
-                direction = (-1, 0)
-            elif key[pg.K_s]:
-                direction = (0, 1)
-            elif key[pg.K_d]:
-                direction = (1, 0)
-        level.move_player(direction)
+        # Обработка нажатий
+        key = pg.key.get_pressed()
+        if any(key):
+            direction = (0, 0)
+            if not v.show_lost_mes and not v.show_win_mes:
+                if key[pg.K_w] or key[pg.K_UP]:
+                    direction = (0, -1)
+                elif key[pg.K_a] or key[pg.K_LEFT]:
+                    direction = (-1, 0)
+                elif key[pg.K_s] or key[pg.K_DOWN]:
+                    direction = (0, 1)
+                elif key[pg.K_d] or key[pg.K_RIGHT]:
+                    direction = (1, 0)
+                    2 / 0
+            level.move_player(direction)
 
-        if key[pg.K_r]:
+            if key[pg.K_r]:
+                level = restart_level()
+            elif key[pg.K_ESCAPE]:
+                running = False
+
+        # level.debug()
+
+        # Обновление игры
+        pg.display.update()
+
+    # Любая возникающая ошибка перезапустит уровень или закроет игру
+    except Exception:
+        result = messagebox.askyesno(
+            title="Ошибка",
+            message="Произошла непредвиденная ошибка. Перезапускаем уровень?",
+            icon="error",
+        )
+        if result:
             level = restart_level()
-        elif key[pg.K_ESCAPE]:
+        else:
             running = False
-
-    level.debug()
-
-    # Обновление игры
-    pg.display.update()
+            pg.quit()
 
 
 # Выход из Pygame
