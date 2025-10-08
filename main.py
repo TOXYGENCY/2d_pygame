@@ -2,6 +2,7 @@ from entities import Level, all_entities
 import vars as v
 import pygame as pg
 from tkinter import messagebox
+import traceback
 
 # Инициализация Pygame
 pg.init()
@@ -138,7 +139,9 @@ while running:
         pg.display.update()
 
     # Любая возникающая ошибка перезапустит уровень или закроет игру
-    except Exception:
+    except Exception as ex:
+        traceback.print_exception(type(ex), ex, ex.__traceback__)
+
         result = messagebox.askyesno(
             title="Ошибка",
             message="Произошла непредвиденная ошибка. Перезапускаем уровень?",

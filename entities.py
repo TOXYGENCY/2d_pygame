@@ -260,8 +260,6 @@ class Level:
             i += 1
 
         entity.set_next_direction_sprite(next_direction2)
-        # if entity.type_code == "N":
-        # print(next_direction, next_direction2)
         return next_tile, next_tile2
 
     # Переместить сущность. direction: (x, y)
@@ -269,17 +267,19 @@ class Level:
         self,
         entity: Entity,
     ):
+        # определяем 
         this_tile = self.get_tile(entity.tile.x, entity.tile.y)
-        next_tile, next_tile2 = self.calc_next_tiles(entity, this_tile)
+
+        if entity.next_tile:
+            next_tile = entity.next_tile
+            next_tile2 = None
+        else:
+            next_tile, next_tile2 = self.calc_next_tiles(entity, this_tile)
 
         this_tile.clear_entity()
         next_tile.assign_entity(entity)
         entity.tile = next_tile
-
-    # Перемещение NPC
-    def move_npc(self):
-        self.move_entity()
-        pass
+        entity.next_tile = next_tile2
 
     # перемещение игрока. direction: (x, y) но с перевернутым y
     def move_player(self, direction: tuple[int, int]):
