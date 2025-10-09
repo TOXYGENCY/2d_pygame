@@ -11,13 +11,15 @@ COLLECTABLE_MES = "You picked up a collectable"
 lost_mes = "GAME OVER."
 
 DEFAULT_TICK_RATE = 6
-# ENTITY_MOVE_RATE = DEFAULT_TICK_RATE * 0.5
-ENTITY_MOVE_RATE = 3
+ENTITY_MOVE_RATE = int(DEFAULT_TICK_RATE * 0.75)
+# ENTITY_MOVE_RATE = 8
 entity_move_timer = 0
 tick_rate = DEFAULT_TICK_RATE
 
 show_lost_mes = False
 show_win_mes = False
+
+should_move_entities = True
 
 # Ширина и высота окна игры
 WIDTH = 900

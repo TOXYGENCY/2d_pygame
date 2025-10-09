@@ -33,7 +33,6 @@ class Tile(Sprited):
         self.entity = None
         self.assign_entity()
         self.occupied = False
-        self.booked = False
         self.refresh_occupation()
 
     # Автоназначение спрайта по символьному коду её типа
@@ -144,7 +143,6 @@ class Enemy(Entity):
     def __init__(self, tile: Tile):
         super().__init__("X", tile)
         self.sprite_set = v.enemy_sprites
-        self.next_tile = None
 
 
 # Сущность игрока
@@ -165,19 +163,24 @@ class Level:
             filter(lambda x: isinstance(x, Player), all_entities)
         )[0]
         self.player_xy = (self.player.tile.x, self.player.tile.y)
-        self.should_move_entities = False
         self.moves_score = 0
 
-    def move_entities_on_timer(self):
+    # Проверка смерти игрока (используется после передвижения врага)
+    def check_player_death(self):
+        if (
+            self.player.tile.entity is not None
+            and self.player.tile.entity.type_code != "P"
+        ):
+            self.game_over("Enemy got you!")
+
+    # Передвижение всех сущностей
+    def move_all_entities(self):
         i = 0
-        while i < len(
-            all_entities
-        ):  # почему то набивается массив все больше и больше
+        while i < len(all_entities):
             if all_entities[i].type_code in "XN":
-                # print(f"moving {all_entities[i]}")
                 self.move_entity(all_entities[i])
+                self.check_player_death()
             i += 1
-        pass
 
     # Создание карты по массиву с инструкциями
     def create_tiles(self, tiles) -> List[List[Tile]]:
@@ -207,6 +210,7 @@ class Level:
             x = 0
             while x <= len(self.tiles[y]) - 1:
                 # отрисовка клетки
+                # если это стена - то случайно поворачиваем спрайт
                 if self.tiles[y][x].type_code == "1":
                     screen.blit(
                         pg.transform.rotate(
@@ -216,6 +220,7 @@ class Level:
                         (v.SPRITE_SIZE * x, v.SPRITE_SIZE * y),
                     )
                 else:
+                    # иначе просто отрисовываем
                     screen.blit(
                         self.tiles[y][x].sprite,
                         (v.SPRITE_SIZE * x, v.SPRITE_SIZE * y),
@@ -230,17 +235,29 @@ class Level:
             y += 1
 
     # Проверка, доступна ли клетка для сущности
-    def is_tile_available_for_entity(self, tile: Tile) -> bool:
+    def is_tile_available_for_entity(
+        self, tile: Tile, entity_type: str = None
+    ) -> bool:
+        # Для сущностей-врагов
+        if entity_type == "X":
+            # Если на клетке есть игрок, то она доступна
+            if (
+                tile is not None
+                and tile.entity is not None
+                and tile.entity.type_code == "P"
+            ):
+                return True
+
+        # Для остальных сущностей
         return tile is not None and (
-            not tile.occupied
-            and not tile.booked
-            and tile.type_code not in "12EC"
+            not tile.occupied and tile.type_code not in "12EC"
         )
 
     # Рассчитать клетки для перемещения сущности
     def calc_next_tiles(
         self,
         this_tile: Tile,
+        entity: Entity,
     ):
         # список доступных направлений
         directions = list(v.DIRECTIONS.values())
@@ -251,7 +268,7 @@ class Level:
         next_tile = None
         i1 = 0
         while i1 < len(directions) and not (
-            self.is_tile_available_for_entity(next_tile)
+            self.is_tile_available_for_entity(next_tile, entity.type_code)
         ):
             next_direction = directions[i1]
             next_tile = self.get_tile(
@@ -265,7 +282,7 @@ class Level:
         next_tile2 = None
         i2 = 0
         while i2 < len(directions) and not (
-            self.is_tile_available_for_entity(next_tile2)
+            self.is_tile_available_for_entity(next_tile2, entity.type_code)
         ):
             next_direction2 = directions[i2]
             next_tile2 = self.get_tile(
@@ -274,16 +291,19 @@ class Level:
             )
             i2 += 1
 
+        # если ни одна клетка по НАПРАВЛЕНИЮ не доступна, то явно ставим None
+        # решение принимается на основе счетчика рассмотренных направлений
         if i1 == len(directions) and not self.is_tile_available_for_entity(
-            next_tile
+            next_tile, entity.type_code
         ):
             next_tile = None
 
         if i2 == len(directions) and not self.is_tile_available_for_entity(
-            next_tile2
+            next_tile2, entity.type_code
         ):
             next_tile2 = None
 
+        # Возвращаем все, потому что в другом месте это нужнее
         return next_tile, next_tile2, next_direction, next_direction2
 
     # Переместить сущность. direction: (x, y)
@@ -300,15 +320,16 @@ class Level:
         ):
             next_tile = entity.next_tile
             next_tile2, _, entity.next_direction, _ = self.calc_next_tiles(
-                next_tile
+                next_tile, entity
             )
         else:
             next_tile, next_tile2, _, entity.next_direction = (
-                self.calc_next_tiles(this_tile)
+                self.calc_next_tiles(this_tile, entity)
             )
 
+        # если обе клетки доступны, то передвигаем и меняем спрайт
         if self.is_tile_available_for_entity(
-            next_tile
+            next_tile, entity.type_code
         ) and self.is_tile_available_for_entity(next_tile2):
             this_tile.clear_entity()
             next_tile.assign_entity(entity)
@@ -316,7 +337,8 @@ class Level:
             entity.next_tile = next_tile2
             entity.set_next_direction_sprite(entity.next_direction)
 
-        elif self.is_tile_available_for_entity(next_tile):
+        # если только одна клетка доступна, то просто передвигаем
+        elif self.is_tile_available_for_entity(next_tile, entity.type_code):
             this_tile.clear_entity()
             next_tile.assign_entity(entity)
             entity.tile = next_tile
@@ -360,8 +382,10 @@ class Level:
             elif next_tile.type_code == "E":
                 self.level_passed()
 
+            # Само передвижение персонажа (переназначение клеток)
             this_tile.clear_entity()
             next_tile.assign_entity(self.player)
+            self.player.tile = next_tile
             self.player_xy = new_player_xy
             self.moves_score += 1
         else:
@@ -398,6 +422,7 @@ class Level:
     def level_passed(self):
         v.show_win_mes = True
         v.show_lost_mes = False
+        v.should_move_entities = False
         # v.tick_rate = 3
         print(v.WIN_MES)
 
@@ -405,6 +430,7 @@ class Level:
     def game_over(self, message):
         v.show_win_mes = False
         v.show_lost_mes = True
+        v.should_move_entities = False
         # v.tick_rate = 3
         v.lost_mes = f"GAME OVER. {message}"
         print(v.lost_mes)

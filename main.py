@@ -29,6 +29,7 @@ def restart_level():
     v.show_lost_mes = False
     v.tick_rate = v.DEFAULT_TICK_RATE
     v.lost_mes = "GAME OVER."
+    v.should_move_entities = True
     all_entities.clear()
     level = Level(v.selected_level)
     level.moves_score = 0
@@ -102,12 +103,14 @@ while running:
         # Рисование спрайтов
         level.render_tiles(screen)
 
+        # перемещение сущностей по таймеру
         if (
             v.entity_move_timer == v.ENTITY_MOVE_RATE
             and not v.show_lost_mes
             and not v.show_win_mes
+            and v.should_move_entities
         ):
-            level.move_entities_on_timer()
+            level.move_all_entities()
 
         # Рисование текста
         render_text()
