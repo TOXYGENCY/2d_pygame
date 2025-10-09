@@ -86,6 +86,7 @@ class Entity(Sprited):
         self.tile = tile
         self.sprite_set = None
         self.next_tile = None
+        self.next_direction = (0, 0)
 
     # Изменение спрайта для сущности
     def change_sprite(self, key: str):
@@ -101,6 +102,8 @@ class Entity(Sprited):
 
     # Изменение спрайта сущности в зависимости от СЛЕДУЮЩЕГО направления
     def set_next_direction_sprite(self, next_direction):
+        print(f"{self.type_code} next_direction = {next_direction}")
+        self.next_direction = next_direction
         if next_direction == (0, -1):
             self.change_sprite("UP")
         elif next_direction == (0, 1):
@@ -259,27 +262,32 @@ class Level:
             )
             i += 1
 
-        entity.set_next_direction_sprite(next_direction2)
-        return next_tile, next_tile2
+        return next_tile, next_tile2, next_direction, next_direction2
 
     # Переместить сущность. direction: (x, y)
     def move_entity(
         self,
         entity: Entity,
     ):
-        # определяем 
+        # определяем текущую клетку
         this_tile = self.get_tile(entity.tile.x, entity.tile.y)
 
+        # если уже определена след. клетка - используем
         if entity.next_tile:
             next_tile = entity.next_tile
-            next_tile2 = None
+            next_tile2, _, entity.next_direction, _ = self.calc_next_tiles(
+                entity, next_tile
+            )
         else:
-            next_tile, next_tile2 = self.calc_next_tiles(entity, this_tile)
+            next_tile, next_tile2, _, entity.next_direction = (
+                self.calc_next_tiles(entity, this_tile)
+            )
 
         this_tile.clear_entity()
         next_tile.assign_entity(entity)
         entity.tile = next_tile
         entity.next_tile = next_tile2
+        entity.set_next_direction_sprite(entity.next_direction)
 
     # перемещение игрока. direction: (x, y) но с перевернутым y
     def move_player(self, direction: tuple[int, int]):
