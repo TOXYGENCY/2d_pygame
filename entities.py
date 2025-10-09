@@ -33,6 +33,7 @@ class Tile(Sprited):
         self.entity = None
         self.assign_entity()
         self.occupied = False
+        self.booked = False
         self.refresh_occupation()
 
     # Автоназначение спрайта по символьному коду её типа
@@ -228,39 +229,60 @@ class Level:
                 x += 1
             y += 1
 
+    # Проверка, доступна ли клетка для сущности
+    def is_tile_available_for_entity(self, tile: Tile) -> bool:
+        return tile is not None and (
+            not tile.occupied
+            and not tile.booked
+            and tile.type_code not in "12EC"
+        )
+
     # Рассчитать клетки для перемещения сущности
     def calc_next_tiles(
         self,
-        entity: Entity,
         this_tile: Tile,
     ):
+        # список доступных направлений
         directions = list(v.DIRECTIONS.values())
+        directions.remove((0, 0))
         random.shuffle(directions)
+
+        # поиск первой доступной клетки
         next_tile = None
-        i = 0
-        while i < len(directions) and (
-            next_tile is None or next_tile.occupied
+        i1 = 0
+        while i1 < len(directions) and not (
+            self.is_tile_available_for_entity(next_tile)
         ):
-            # print(f"Considering next_direction = {directions[i]}")
-            next_direction = directions[i]
+            next_direction = directions[i1]
             next_tile = self.get_tile(
                 this_tile.x + next_direction[0],
                 this_tile.y + next_direction[1],
             )
-            i += 1
+            i1 += 1
 
+        # поиск второй доступной клетки
         random.shuffle(directions)
         next_tile2 = None
-        i = 0
-        while i < len(directions) and (
-            next_tile2 is None or next_tile2.occupied
+        i2 = 0
+        while i2 < len(directions) and not (
+            self.is_tile_available_for_entity(next_tile2)
         ):
-            next_direction2 = directions[i]
+            next_direction2 = directions[i2]
             next_tile2 = self.get_tile(
                 next_tile.x + next_direction2[0],
                 next_tile.y + next_direction2[1],
             )
-            i += 1
+            i2 += 1
+
+        if i1 == len(directions) and not self.is_tile_available_for_entity(
+            next_tile
+        ):
+            next_tile = None
+
+        if i2 == len(directions) and not self.is_tile_available_for_entity(
+            next_tile2
+        ):
+            next_tile2 = None
 
         return next_tile, next_tile2, next_direction, next_direction2
 
@@ -273,21 +295,31 @@ class Level:
         this_tile = self.get_tile(entity.tile.x, entity.tile.y)
 
         # если уже определена след. клетка - используем
-        if entity.next_tile:
+        if entity.next_tile and self.is_tile_available_for_entity(
+            entity.next_tile
+        ):
             next_tile = entity.next_tile
             next_tile2, _, entity.next_direction, _ = self.calc_next_tiles(
-                entity, next_tile
+                next_tile
             )
         else:
             next_tile, next_tile2, _, entity.next_direction = (
-                self.calc_next_tiles(entity, this_tile)
+                self.calc_next_tiles(this_tile)
             )
 
-        this_tile.clear_entity()
-        next_tile.assign_entity(entity)
-        entity.tile = next_tile
-        entity.next_tile = next_tile2
-        entity.set_next_direction_sprite(entity.next_direction)
+        if self.is_tile_available_for_entity(
+            next_tile
+        ) and self.is_tile_available_for_entity(next_tile2):
+            this_tile.clear_entity()
+            next_tile.assign_entity(entity)
+            entity.tile = next_tile
+            entity.next_tile = next_tile2
+            entity.set_next_direction_sprite(entity.next_direction)
+
+        elif self.is_tile_available_for_entity(next_tile):
+            this_tile.clear_entity()
+            next_tile.assign_entity(entity)
+            entity.tile = next_tile
 
     # перемещение игрока. direction: (x, y) но с перевернутым y
     def move_player(self, direction: tuple[int, int]):
