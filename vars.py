@@ -56,7 +56,7 @@ entity_types = {
     "P": r"assets\png\cars\player\blue_coupe_r.png",
     "X": r"assets\png\cars\enemy\red_muscle_r.png",
     "C": r"assets\png\collectables\coin.png",
-    "2": r"assets\png\props\tree1.png",
+    "2": r"assets\png\props\trees.png",
     "N": r"assets\png\cars\npc\npc_r.png",
 }
 
