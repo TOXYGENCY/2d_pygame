@@ -1,6 +1,7 @@
 import random
 from typing import List
-
+from tkinter import messagebox
+import traceback
 import vars as v
 import pygame as pg
 
@@ -195,10 +196,35 @@ class Level:
             y += 1
         return level_tiles
 
+    # Валидация уровня
+    def validate_level(self, lines):
+        if lines.count("P") != 1:
+            raise ValueError("На уровне должен быть игрок [P] и только один.")
+        if lines.count("C") == 0:
+            raise ValueError(
+                "На уровне должен быть хотя бы один коллекционный предмет [C]."
+            )
+        if lines.count("E") == 0:
+            raise ValueError(
+                "На уровне должен быть хотя бы один выход из уровня [E]."
+            )
+
     # Парсинг файла карты
     def create_tiles_from_file(self, path: str) -> List[List[Tile]]:
         file = open(path, "r")
         lines = file.read()  # читаем все как есть
+        try:
+            self.validate_level(lines)
+        except ValueError as ex:
+            traceback.print_exception(type(ex), ex, ex.__traceback__)
+            mes = f"Уровень некорректен и не может быть запущен. {str(ex)}"
+            messagebox.showerror(
+                title="Ошибка уровня",
+                message=mes,
+                icon="error",
+            )
+            pg.quit()
+
         lines = lines.split("\n")  # делим и убираем переносы
         return self.create_tiles(lines)
 
