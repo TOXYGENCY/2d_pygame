@@ -135,7 +135,7 @@ while running:
                     direction = (0, 1)
                 elif key[pg.K_d] or key[pg.K_RIGHT]:
                     direction = (1, 0)
-            level.move_player(direction)
+                level.move_player(direction)
 
             if key[pg.K_r]:
                 level = restart_level()

@@ -386,7 +386,8 @@ class Level:
             next_tile.assign_entity(self.player)
             self.player.tile = next_tile
             self.player_xy = new_player_xy
-            self.moves_score += 1
+            if direction != (0, 0):
+                self.moves_score += 1
         else:
             pass
 
