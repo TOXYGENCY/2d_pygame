@@ -11,8 +11,8 @@ COLLECTABLE_MES = "You picked up a collectable"
 lost_mes = "GAME OVER."
 
 DEFAULT_TICK_RATE = 6
-ENTITY_MOVE_RATE = int(DEFAULT_TICK_RATE * 0.75)
-# ENTITY_MOVE_RATE = 8
+ENTITY_MOVE_RATE = int(DEFAULT_TICK_RATE)
+ENTITY_MOVE_RATE = 6
 entity_move_timer = 0
 tick_rate = DEFAULT_TICK_RATE
 
@@ -55,7 +55,7 @@ DIRECTIONS = {
 entity_types = {
     "P": r"assets\png\cars\player\blue_coupe_r.png",
     "X": r"assets\png\cars\enemy\red_muscle_r.png",
-    "C": r"assets\png\collectables\cash_stack.png",
+    "C": r"assets\png\collectables\coin.png",
     "2": r"assets\png\props\tree1.png",
     "N": r"assets\png\cars\npc\npc_r.png",
 }
