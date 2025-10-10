@@ -102,7 +102,6 @@ class Entity(Sprited):
 
     # Изменение спрайта сущности в зависимости от СЛЕДУЮЩЕГО направления
     def set_next_direction_sprite(self, next_direction):
-        print(f"{self.type_code} next_direction = {next_direction}")
         self.next_direction = next_direction
         if next_direction == (0, -1):
             self.change_sprite("UP")
@@ -277,6 +276,13 @@ class Level:
             )
             i1 += 1
 
+        # если ни одна клетка по НАПРАВЛЕНИЮ не доступна, то ставим this_tile
+        # решение принимается на основе счетчика рассмотренных направлений
+        if i1 == len(directions) and not self.is_tile_available_for_entity(
+            next_tile, entity.type_code
+        ):
+            next_tile = this_tile
+
         # поиск второй доступной клетки
         random.shuffle(directions)
         next_tile2 = None
@@ -291,17 +297,10 @@ class Level:
             )
             i2 += 1
 
-        # если ни одна клетка по НАПРАВЛЕНИЮ не доступна, то явно ставим None
-        # решение принимается на основе счетчика рассмотренных направлений
-        if i1 == len(directions) and not self.is_tile_available_for_entity(
-            next_tile, entity.type_code
-        ):
-            next_tile = None
-
         if i2 == len(directions) and not self.is_tile_available_for_entity(
             next_tile2, entity.type_code
         ):
-            next_tile2 = None
+            next_tile2 = this_tile
 
         # Возвращаем все, потому что в другом месте это нужнее
         return next_tile, next_tile2, next_direction, next_direction2
