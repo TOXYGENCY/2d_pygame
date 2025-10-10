@@ -1,7 +1,7 @@
 # Путь выбранного файла уровня относительно main.py
 # Если имя файла уровня это level1.txt и лежит в папке levels,
 # то путь будет "levels/level1.txt"
-selected_level = "levels/level1.txt"
+level_directory = "levels/"
 
 # Константы и глобальные переменные игры
 WINDOW_TITLE = "2D Pygame"

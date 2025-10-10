@@ -3,19 +3,26 @@ import vars as v
 import pygame as pg
 from tkinter import messagebox
 import traceback
+import sys
 
 # Инициализация Pygame
 pg.init()
 screen = pg.display.set_mode((v.WIDTH, v.HEIGHT))
 pg.display.set_caption(v.WINDOW_TITLE)
 
+
 # Основной цикл рендера
 clock = pg.time.Clock()
 running = True
 
-# Заполнение экрана белым цветом
+# Создание уровня
 screen.fill(v.WHITE)
-level = Level(v.selected_level)
+level_filename = "level.txt"
+# получаем уровень из командной строки
+if len(sys.argv) > 1:
+    level_filename = sys.argv[1] + ".txt"
+selected_level = v.level_directory + level_filename
+level = Level(selected_level)
 
 moves_font = pg.font.SysFont(v.MAIN_FONT, v.FONT_LARGE, True)
 controls_font = pg.font.SysFont(v.MAIN_FONT, v.FONT_SMALL, True)
@@ -31,7 +38,7 @@ def restart_level():
     v.lost_mes = "GAME OVER."
     v.should_move_entities = True
     all_entities.clear()
-    level = Level(v.selected_level)
+    level = Level(selected_level)
     level.moves_score = 0
     print("Level restarted!")
     return level
